@@ -1,0 +1,112 @@
+﻿
+> our-story-backend@0.1.0 build
+> next build
+
+Γû▓ Next.js 16.2.7 (Turbopack)
+- Environments: .env
+
+node.exe : ΓÜá The 
+"middleware" file 
+convention is deprecated. 
+Please use "proxy" 
+instead. Learn more: https:
+//nextjs.org/docs/messages/
+middleware-to-proxy
+At line:1 char:1
++ & "C:\Program 
+Files\nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
+    + CategoryInfo         
+     : NotSpecified: (ΓÜá  
+   The "middle...leware-   
+ to-proxy:String) [], R    
+emoteException
+    + FullyQualifiedErrorI 
+   d : NativeCommandError
+ 
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 19.0s
+  Running TypeScript ...
+  Finished TypeScript in 9.4s ...
+  Collecting page data using 3 workers ...
+Error [PrismaClientInitiali
+zationError]: 
+`PrismaClient` needs to be 
+constructed with a 
+non-empty, valid 
+`PrismaClientOptions`:
+
+```
+new PrismaClient({
+  ...
+})
+```
+
+or
+
+```
+constructor() {
+  super({ ... });
+}
+```
+          
+    at module evaluation (C
+:\Users\Administrator\MLbac
+kend\.next\server\chunks\[r
+oot-of-the-server]__08egwar
+._.js:1:1048)
+    at instantiateModule (C
+:\Users\Administrator\MLbac
+kend\.next\server\chunks\[t
+urbopack]_runtime.js:853:9)
+    at getOrInstantiateModu
+leFromParent (C:\Users\Admi
+nistrator\MLbackend\.next\s
+erver\chunks\[turbopack]_ru
+ntime.js:877:12)
+    at Context.esmImport 
+[as i] (C:\Users\Administra
+tor\MLbackend\.next\server\
+chunks\[turbopack]_runtime.
+js:281:20)
+    at module evaluation (C
+:\Users\Administrator\MLbac
+kend\.next\server\chunks\[r
+oot-of-the-server]__08egwar
+._.js:1:3367)
+    at instantiateModule (C
+:\Users\Administrator\MLbac
+kend\.next\server\chunks\[t
+urbopack]_runtime.js:853:9)
+    at 
+instantiateRuntimeModule (C
+:\Users\Administrator\MLbac
+kend\.next\server\chunks\[t
+urbopack]_runtime.js:882:12
+)
+    at getOrInstantiateRunt
+imeModule (C:\Users\Adminis
+trator\MLbackend\.next\serv
+er\chunks\[turbopack]_runti
+me.js:895:12)
+    at Object.m (C:\Users\A
+dministrator\MLbackend\.nex
+t\server\chunks\[turbopack]
+_runtime.js:898:18) {
+  clientVersion: '7.8.0',
+  errorCode: undefined,
+  retryable: undefined
+}
+
+> Build error occurred
+Error: Failed to collect 
+page data for 
+/api/auth/register
+    at ignore-listed 
+frames {
+  type: 'Error'
+}

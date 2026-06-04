@@ -1,7 +1,7 @@
 import { GoogleGenAI } from '@google/genai';
 
 // Assume GEMINI_API_KEY is defined in .env
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || 'mock_api_key' });
 
 export async function generateContent(prompt: string): Promise<string> {
   try {
