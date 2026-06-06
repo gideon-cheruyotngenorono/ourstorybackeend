@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcrypt';
 import prisma from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 import { registerSchema } from '@/validators/auth';
 import { signAccessToken, signRefreshToken } from '@/lib/jwt';
 import { cookies } from 'next/headers';
@@ -63,13 +64,31 @@ export async function POST(req: Request) {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = await prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        displayName,
-      },
-    });
+    let user;
+    try {
+      user = await prisma.user.create({
+        data: {
+          email,
+          password: hashedPassword,
+          displayName,
+        },
+      });
+    } catch (dbErr: any) {
+      // Handle Prisma known errors (e.g., unique constraint violation)
+      if (dbErr instanceof Prisma.PrismaClientKnownRequestError) {
+        // P2002 is unique constraint failed
+        if (dbErr.code === 'P2002') {
+          console.warn('[AUTH_REGISTER] Prisma P2002 unique constraint', {
+            meta: dbErr.meta,
+          });
+          return NextResponse.json({ error: 'Email already exists' }, { status: 400 });
+        }
+        // Add other Prisma error codes handling if needed
+      }
+      // For other errors, log and return 500
+      console.error('[AUTH_REGISTER] Prisma error on user.create', dbErr);
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    }
 
     const accessToken = signAccessToken({ userId: user.id });
     const refreshToken = signRefreshToken({ userId: user.id });
