@@ -7,13 +7,45 @@ import { cookies } from 'next/headers';
 
 export async function POST(req: Request) {
   try {
-    let body: any
-    try {
-      body = await req.json();
-    } catch (jsonErr: any) {
-      // Malformed or empty JSON
-      console.error('[AUTH_REGISTER] failed to parse JSON body', { message: jsonErr?.message });
+    // Require JSON Content-Type to avoid accidental empty form posts
+    const contentType = req.headers.get('content-type') || '';
+    if (!contentType.toLowerCase().includes('application/json')) {
+      console.error('[AUTH_REGISTER] invalid content-type', { contentType });
+      return NextResponse.json({ error: 'Content-Type must be application/json' }, { status: 400 });
+    }
+
+    const raw = await req.text();
+    if (!raw || raw.trim() === '') {
+      console.error('[AUTH_REGISTER] empty request body');
       return NextResponse.json({ error: 'Invalid or empty JSON body' }, { status: 400 });
+    }
+
+    let body: any;
+    try {
+      body = JSON.parse(raw);
+    } catch (jsonErr: any) {
+      // Log a safe preview of the raw body to help debug client issues (truncate)
+      console.error('[AUTH_REGISTER] failed to parse JSON body', {
+        message: jsonErr?.message,
+        contentType,
+        bodyPreview: raw.slice(0, 1000),
+      });
+      return NextResponse.json({ error: 'Invalid or empty JSON body' }, { status: 400 });
+    }
+
+    // Mask sensitive fields when logging
+    try {
+      const safeBody = typeof body === 'object' && body !== null ? { ...body } : body;
+      if (safeBody && typeof safeBody === 'object' && 'password' in safeBody) safeBody.password = '[REDACTED]';
+      console.info('[AUTH_REGISTER] parsed body', {
+        headers: {
+          contentType,
+          'user-agent': req.headers.get('user-agent') || undefined,
+        },
+        body: safeBody,
+      });
+    } catch (logErr) {
+      // swallow logging errors
     }
 
     const parsed = registerSchema.safeParse(body);
