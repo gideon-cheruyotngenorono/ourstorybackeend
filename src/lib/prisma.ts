@@ -16,7 +16,14 @@ if (!connectionString) {
   // Fallback to constructing without adapter so imports don't completely fail in very constrained envs
   prisma = globalThis.prismaGlobal ?? new PrismaClient()
 } else {
-  const pool = new Pool({ connectionString })
+  // When connecting to Supabase or when sslmode is required, enable TLS on the pool.
+  const needsSsl = /supabase\.co/.test(connectionString || '') || /(sslmode=require|sslmode=verify-full)/.test(connectionString || '') || process.env.PGSSLMODE === 'require'
+
+  const pool = new Pool({
+    connectionString,
+    ssl: needsSsl ? { rejectUnauthorized: false } : undefined,
+  })
+
   const adapter = new PrismaPg(pool)
   prisma = globalThis.prismaGlobal ?? new PrismaClient({ adapter })
 }
