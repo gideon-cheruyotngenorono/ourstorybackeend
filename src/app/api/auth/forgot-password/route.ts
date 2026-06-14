@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import nodemailer from 'nodemailer';
+import { sendEmail } from '@/lib/email';
 
 export async function POST(req: Request) {
   try {
@@ -35,31 +35,22 @@ export async function POST(req: Request) {
       }
     });
 
-    // Send the email (Requires SMTP configuration in .env)
-    if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
-      const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT) || 587,
-        secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS,
-        },
-      });
+    // Send the email
+    const emailResult = await sendEmail({
+      to: user.email,
+      subject: 'Your Password Reset Request',
+      html: `
+        <h3>Our Story - Password Reset</h3>
+        <p>You requested a password reset. Your 6-digit secure code is:</p>
+        <h2 style="letter-spacing: 5px;">${pin}</h2>
+        <p>This code will expire in 15 minutes. If you did not request this, please ignore this email.</p>
+      `
+    });
 
-      await transporter.sendMail({
-        from: `"Our Story App" <${process.env.SMTP_USER}>`,
-        to: user.email,
-        subject: 'Your Password Reset Request',
-        html: `
-          <h3>Our Story - Password Reset</h3>
-          <p>You requested a password reset. Your 6-digit secure code is:</p>
-          <h2 style="letter-spacing: 5px;">${pin}</h2>
-          <p>This code will expire in 15 minutes. If you did not request this, please ignore this email.</p>
-        `
-      });
-    } else {
-      console.warn('[AUTH_FORGOT_PASSWORD] No SMTP credentials in .env. Pin generated:', pin);
+    if (!emailResult.success) {
+      console.warn('[AUTH_FORGOT_PASSWORD] Email failed, but pin generated:', pin, 'Error:', emailResult.error);
+      // Even if email fails, we don't necessarily want to leak that the email exists or crash,
+      // but if the dev wants to know why it's failing, we log it.
     }
 
     return NextResponse.json({ success: true, message: 'If an account exists, a reset link was sent.' }, { status: 200 });

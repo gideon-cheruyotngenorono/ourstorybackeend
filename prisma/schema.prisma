@@ -53,13 +53,13 @@ model PasswordResetToken {
 model Couple {
   id              String   @id @default(uuid())
   partnerAId      String
-  partnerBId      String
+  partnerBId      String?
   anniversaryDate DateTime?
   inviteCode      String?  @unique
   createdAt       DateTime @default(now())
 
   partnerA User @relation("PartnerA", fields: [partnerAId], references: [id])
-  partnerB User @relation("PartnerB", fields: [partnerBId], references: [id])
+  partnerB User? @relation("PartnerB", fields: [partnerBId], references: [id])
 
   messages        Message[]
   notes           Note[]
