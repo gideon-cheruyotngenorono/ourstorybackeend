@@ -52,13 +52,12 @@ export async function POST(req: Request) {
       });
 
       if (!emailResult.success) {
-        console.warn('[COUPLE_CREATE] Failed to send invite email:', emailResult.error);
-        // We still return success as the couple was created, but we notify client about the email failure
+        console.error('[COUPLE_CREATE] Failed to send invite email:', emailResult.error);
         return NextResponse.json({ 
-          message: 'Couple created but email failed to send', 
+          error: { code: 'EMAIL_FAILURE', message: 'Couple created but failed to send invite email. Please try resending from profile.' },
           inviteCode, 
           couple 
-        }, { status: 201 });
+        }, { status: 500 });
       }
     }
 

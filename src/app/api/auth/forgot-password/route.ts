@@ -48,9 +48,10 @@ export async function POST(req: Request) {
     });
 
     if (!emailResult.success) {
-      console.warn('[AUTH_FORGOT_PASSWORD] Email failed, but pin generated:', pin, 'Error:', emailResult.error);
-      // Even if email fails, we don't necessarily want to leak that the email exists or crash,
-      // but if the dev wants to know why it's failing, we log it.
+      console.error('[AUTH_FORGOT_PASSWORD] Email failed:', emailResult.error);
+      return NextResponse.json({ 
+        error: { code: 'EMAIL_FAILURE', message: 'Failed to send reset email. Please try again later.' } 
+      }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, message: 'If an account exists, a reset link was sent.' }, { status: 200 });

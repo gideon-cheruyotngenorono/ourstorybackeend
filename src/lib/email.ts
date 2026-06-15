@@ -8,34 +8,41 @@ interface SendEmailOptions {
 
 export async function sendEmail({ to, subject, html }: SendEmailOptions): Promise<{ success: boolean; error?: string }> {
   try {
-    if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
-      console.warn('[EMAIL] SMTP credentials missing in .env. Skipping email to', to);
-      return { success: false, error: 'SMTP credentials missing' };
+    const host = process.env.SMTP_HOST || 'smtp.resend.com';
+    const port = Number(process.env.SMTP_PORT) || 465;
+    const user = process.env.SMTP_USER || 'resend';
+    const pass = process.env.SMTP_PASS;
+    const from = process.env.SMTP_FROM || 'onboarding@resend.dev';
+
+    if (!pass) {
+      console.warn('[EMAIL] SMTP_PASS missing in .env. Skipping email to', to);
+      return { success: false, error: 'SMTP password missing' };
     }
 
     const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT) || 587,
-      secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
+      host,
+      port,
+      secure: port === 465, 
       auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
+        user,
+        pass,
       },
-      // Adding brief timeouts to prevent hanging if the SMTP server is unresponsive
-      connectionTimeout: 5000, 
-      greetingTimeout: 5000,
-      socketTimeout: 5000,
+      connectionTimeout: 10000, 
+      greetingTimeout: 10000,
+      socketTimeout: 10000,
     });
 
-    await transporter.verify(); // Fail fast if config is bad
+    // Verification step is good but can be slow, let's keep it for debugging
+    // await transporter.verify(); 
 
-    await transporter.sendMail({
-      from: `"Our Story App" <${process.env.SMTP_USER}>`,
+    const info = await transporter.sendMail({
+      from: `"Our Story App" <${from}>`,
       to,
       subject,
       html,
     });
 
+    console.log('[EMAIL_SUCCESS]', info.messageId);
     return { success: true };
   } catch (error: any) {
     console.error('[EMAIL_SEND_ERROR]', error.message || error);
