@@ -16,24 +16,28 @@ export async function GET(req: Request) {
 
     const { searchParams } = new URL(req.url);
     const cursor = searchParams.get('cursor');
-    const limit = parseInt(searchParams.get('limit') || '10', 10);
+    const limit = parseInt(searchParams.get('limit') || '20', 10);
 
-    const items = await prisma.verse.findMany({
-      take: limit + 1,
+    const items = await prisma.jarReason.findMany({
+      where: { coupleId: couple.id },
+      take: limit + 1, // Fetch an extra item to determine if there is a next page
       cursor: cursor ? { id: cursor } : undefined,
-      orderBy: { date: 'desc' }
+      orderBy: { createdAt: 'desc' },
+      include: {
+        creator: { select: { displayName: true } }
+      }
     });
 
     let nextCursor: typeof cursor | null = null;
     if (items.length > limit) {
-      const nextItem = items.pop();
+      const nextItem = items.pop(); // Remove the extra item
       nextCursor = nextItem!.id;
     }
 
     return NextResponse.json({ data: items, nextCursor }, { status: 200 });
 
   } catch (error: any) {
-    console.error('[VERSE_HISTORY_GET]', error);
+    console.error('[JAR_ALL_GET]', error);
     return NextResponse.json({ error: { code: 'INTERNAL_ERROR', message: 'Internal server error' } }, { status: 500 });
   }
 }

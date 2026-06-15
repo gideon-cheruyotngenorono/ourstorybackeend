@@ -18,7 +18,7 @@ export async function GET(req: Request) {
     const cursor = searchParams.get('cursor');
     const limit = parseInt(searchParams.get('limit') || '10', 10);
 
-    const items = await prisma.verse.findMany({
+    const items = await prisma.discussionTopic.findMany({
       take: limit + 1,
       cursor: cursor ? { id: cursor } : undefined,
       orderBy: { date: 'desc' }
@@ -33,7 +33,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ data: items, nextCursor }, { status: 200 });
 
   } catch (error: any) {
-    console.error('[VERSE_HISTORY_GET]', error);
+    console.error('[DISCUSSION_HISTORY_GET]', error);
     return NextResponse.json({ error: { code: 'INTERNAL_ERROR', message: 'Internal server error' } }, { status: 500 });
   }
 }
